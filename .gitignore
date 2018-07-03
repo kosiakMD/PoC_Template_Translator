@@ -2,9 +2,8 @@
 #.gitignore
 __trash
 node_modules
-.idea/inspectionProfiles/
+.idea
 #public/javascripts/
 public/__temp/
-public/semantic/
-semantic
+public/vendor/semantic
 vendor

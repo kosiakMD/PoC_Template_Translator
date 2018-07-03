@@ -28,9 +28,5 @@
     "tmp": "0.0.33",
     "unzip": "^0.1.11",
     "yauzl": "^2.9.2"
-  },
-  "postinstall": {
-    "jquery/dist/jquery.slim.min.js": "link public/vendor/jquery.min.js",
-    "jquery/dist/jquery.slim.min.map": "link public/vendor/jquery.min.js.map"
   }
 }
