@@ -48,13 +48,22 @@
                     <label for="selectLang">Select the Language</label>
                     <select id="selectLang" name="<%= select %>"></select>
                         <br/>
-                    <button type="submit" class="btn teal ui fluid large teal submit button">Download</button>
+                    <div id="resultComponent" class="ui two column grid">
+                        <div class="column">
+                            <button type="submit" class="btn teal ui fluid large teal submit button">Download</button>
+                        </div>
+                        <div class="column">
+                            <div id="previewBtn" class="btn teal ui fluid large teal button">Preview</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="ui error message"></div>
                 <div id="downloadDimmer" class="ui inverted dimmer">
                     <div class="ui text loader">Loading</div>
                 </div>
             </form>
+        </div>
+        <div id="preview">
         </div>
     </div>
 </body>
@@ -72,7 +81,10 @@
               $downloadDimmer = $('#downloadDimmer'), // active
               $resultComponent = $('#resultComponent'),
               $formComponent = $('#formComponent'),
-              $selectLang = $('#selectLang');
+              $selectLang = $('#selectLang'),
+              $previewBtn = $('#previewBtn'),
+              $preview = $('#preview');
+
         // Help Functions
         const showUploadError = (msg) => {
             $uploadErrorDiv.append(`<ul class='list'>
@@ -146,6 +158,29 @@
         });
 
 
+        $previewBtn.on('click', () => {
+            const data = {
+                '<%= select %>': $('[name="<%= select %>"]').val(),
+            };
+            console.log('data', data);
+            $.ajax({
+                contentType: 'application/json',
+                type: 'POST',
+                url: '/result/preview',
+                data: JSON.stringify(data),
+                cache: false,
+                // contentType: false,
+                // processData: false,
+                success: (data) => {
+                    console.log('success', data);
+                    // $preview.show();
+                    $preview.html(`
+                        <iframe src="${data.path}" frameborder="0" scrolling="no" onload="resizeIframe(this)" />
+                    `);
+                },
+            });
+        });
+
         $submitDownloadForm.on('click', () => {
             $submitDownloadForm.submit();
         });
@@ -192,6 +227,11 @@
             // return `<select name="<%= select %>">${empty}${options}</select>`;
             return empty + options;
         }
+
     })
+    function resizeIframe(obj) {
+        obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+        obj.style.width = obj.contentWindow.document.body.scrollWidth + 'px';
+    }
 </script>
 </html>

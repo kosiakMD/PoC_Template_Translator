@@ -50,6 +50,141 @@ const checkFiles = (excelVocabularyFile, appZippedFile) => {
 const archiveHelper = new ArchiveHelper();
 let vocabulary = {};
 
+const handler = (req, res, next, result) => {
+    // console.log('request', req);
+    try {
+        const language = req.body[FORMS.downloadArchive.select];
+        console.log('language', language);
+        if (!language) {
+            throw new Error('No Language selected');
+        }
+        const {name: tempFolderUnpackedName, removeCallback} = tmp.dirSync();
+        // const tempFolderUnpackedName = tmp.tmpNameSync();
+        // console.log('pathName', pathName);
+        console.log('getFile', archiveHelper.getFile());
+        // fs.copyFileSync(archiveHelper.getFile(), `${pathName}/${language}.zip`);
+
+        const inputArchive = archiveHelper.getFile();
+        const extname = path.extname(inputArchive);
+        const inputArchiveName = path.basename(inputArchive, extname);
+        console.log('get inputArchive path:', inputArchiveName);
+
+        // const unpackedArchiveFolder = tempFolderUnpackedName;
+        // const unpackedArchiveFolder = __dirname + '/../__trash/' + inputArchiveName + '_' + language;
+        const unpackedArchiveFolder = '__temp/' + inputArchiveName + '_' + language;
+        const unpackedArchiveAbsolutePath = __dirname + '/../public/' + unpackedArchiveFolder;
+        console.log('tempFolderUnpackedName', tempFolderUnpackedName);
+        const unpackedArchivePath = unpackedArchiveAbsolutePath + '/' + inputArchiveName;
+        // const dist = distPath;
+
+        // const stream = fs.createReadStream(inputArchive)
+        //     .pipe(unzip.Extract({ path: unpackedArchiveFolder }));
+        extract(inputArchive, {dir: unpackedArchiveAbsolutePath}, function (err) {
+            // extraction is complete. make sure to handle the err
+            console.error(err)
+            // })
+
+            // stream.on('close', () => {
+            const templates = ['.html', '.htm'] // , '.js', '.css'];
+            walk(unpackedArchiveAbsolutePath, (files) => {
+                console.log('files', files);
+                files.forEach((file) => {
+                    if (!file) return;
+                    // console.log('file', file);
+                    let ext = path.extname(file);
+                    if (templates.includes(ext)) {
+                        console.log('ext', ext, 'file', file);
+                        let fileBuffer = fs.readFileSync(file);
+                        const charsetMatch = detectCharacterEncoding(fileBuffer);
+                        console.log('charsetMatch', charsetMatch);
+                        let fileAsText = fs.readFileSync(file,
+                            charsetMatch && charsetMatch.encoding && charsetMatch.encoding >= 50 ?
+                                charsetMatch.encoding
+                                : 'utf-8');
+                        // console.log('fileAsText', fileAsText);
+                        let translatedText = templateRenderController(fileAsText, vocabulary, language);
+                        // console.log('translatedText', translatedText);
+                        fs.writeFileSync(file, translatedText)
+                    }
+                });
+
+                const downloadFileName = `${inputArchiveName}_${language}.zip`;
+                const downloadPath = `${__dirname}/../public/__temp/${downloadFileName}`;
+                const outputArchiveStream = fs.createWriteStream(downloadPath);
+                const zipArchive = archiver('zip');
+                outputArchiveStream.on('close', function () {
+                    console.log(zipArchive.pointer() + ' total bytes');
+                    console.log('archiver has been finalized and the output file descriptor has closed.');
+
+                    console.log('exist:', fs.existsSync(downloadPath), downloadPath);
+
+                    console.log('Result return as:', result)
+                    if (result === 'download') {
+                        res.download(downloadPath, downloadFileName, (err) => {
+                            if (err) {
+                                console.error(err);
+                            } else {
+                                console.log('downloading successful');
+                            }
+                        });
+                    } else {
+                        fs.readdir(unpackedArchiveAbsolutePath, (err, files) => {
+                            if (err) {
+                                console.error(err);
+                                next(new Error(err));
+                            }
+                            let path = '';
+                            console.log('check files', files)
+                            if (files.length > 1) {
+                                path = unpackedArchiveFolder;
+                                console.log('RESULT: files');
+                            } else {
+                                const filePath = files[0];
+                                const stat = fs.statSync(unpackedArchiveAbsolutePath+ '/' + filePath);
+                                if(stat && stat.isDirectory()) {
+                                    // const fileName = path.basename(filePath);
+                                    path = unpackedArchiveFolder + '/' + filePath;
+                                    console.log('RESULT: folder', path);
+                                } else {
+                                    path = unpackedArchiveFolder;
+                                    console.log('RESULT: 1 file');
+                                }
+                            }
+                            res.setHeader('Content-Type', 'application/json');
+                            res.send(
+                                JSON.stringify({
+                                    success: true,
+                                    path: path,
+                                })
+                            )
+                        });
+                    }
+
+
+                });
+                zipArchive.on('error', function(err){
+                    throw err;
+                });
+                zipArchive.pipe(outputArchiveStream);
+                // zipArchive.bulk([
+                //     { expand: true, cwd: 'source', src: ['**'], dest: 'source'}
+                // ]);
+                zipArchive.directory(unpackedArchiveAbsolutePath, false);
+                zipArchive.finalize();
+                // res.setHeader('Content-Type', 'application/json')
+                //     .send(JSON.stringify({
+                //         success: true,
+                //         fileName: downloadFileName,
+                //     }));});
+            });
+        });
+
+        // removeCallback();
+    } catch (e) {
+        next(new Error(e));
+    }
+}
+
 /* GET home page. */
 router
     .post('/upload/', async function(req, res, next) {
@@ -100,97 +235,10 @@ router
         }
     })
     .post('/download/', async (req, res, next) => {
-        // console.log('request', req);
-        try {
-            const language = req.body[FORMS.downloadArchive.select];
-            console.log('language', language);
-            const {name: tempFolderUnpackedName, removeCallback} = tmp.dirSync();
-            // const tempFolderUnpackedName = tmp.tmpNameSync();
-            // console.log('pathName', pathName);
-            console.log('getFile', archiveHelper.getFile());
-            // fs.copyFileSync(archiveHelper.getFile(), `${pathName}/${language}.zip`);
-
-            const inputArchive = archiveHelper.getFile();
-            const extname = path.extname(inputArchive);
-            const inputArchiveName = path.basename(inputArchive, extname);
-            console.log('get inputArchive path:', inputArchiveName);
-
-            // const unpackedArchiveFolder = tempFolderUnpackedName;
-            const unpackedArchiveFolder = __dirname + '/../__trash/' + inputArchiveName + '_' + language;
-            console.log('tempFolderUnpackedName', tempFolderUnpackedName);
-            const unpackedArchivePath = unpackedArchiveFolder + '/' + inputArchiveName;
-            // const dist = distPath;
-
-            // const stream = fs.createReadStream(inputArchive)
-            //     .pipe(unzip.Extract({ path: unpackedArchiveFolder }));
-            extract(inputArchive, {dir: unpackedArchiveFolder}, function (err) {
-                // extraction is complete. make sure to handle the err
-                console.error(err)
-            // })
-
-            // stream.on('close', () => {
-                    const templates = ['.html', '.htm'] // , '.js', '.css'];
-                    walk(unpackedArchiveFolder, (files) => {
-                        console.log('files', files);
-                        files.forEach((file) => {
-                            if (!file) return;
-                            // console.log('file', file);
-                            let ext = path.extname(file);
-                            if (templates.includes(ext)) {
-                                console.log('ext', ext, 'file', file);
-                                let fileBuffer = fs.readFileSync(file);
-                                const charsetMatch = detectCharacterEncoding(fileBuffer);
-                                console.log('charsetMatch', charsetMatch);
-                                let fileAsText = fs.readFileSync(file,
-                                    charsetMatch && charsetMatch.encoding && charsetMatch.encoding >= 50 ?
-                                        charsetMatch.encoding
-                                        : 'utf-8');
-                                // console.log('fileAsText', fileAsText);
-                                let translatedText = templateRenderController(fileAsText, vocabulary, language);
-                                // console.log('translatedText', translatedText);
-                                fs.writeFileSync(file, translatedText)
-                            }
-                        });
-
-                        const downloadFileName = `${inputArchiveName}_${language}.zip`;
-                        const downloadPath = `${__dirname}/../public/__temp/${downloadFileName}`;
-                        const outputArchiveStream = fs.createWriteStream(downloadPath);
-                        const zipArchive = archiver('zip');
-                        outputArchiveStream.on('close', function () {
-                            console.log(zipArchive.pointer() + ' total bytes');
-                            console.log('archiver has been finalized and the output file descriptor has closed.');
-
-                            console.log('exist:', fs.existsSync(downloadPath), downloadPath);
-
-                            res.download(downloadPath, downloadFileName, (err) => {
-                                if (err) {
-                                    console.error(err);
-                                } else {
-                                    console.log('downloading successful');
-                                }
-                            });
-                        });
-                        zipArchive.on('error', function(err){
-                            throw err;
-                        });
-                        zipArchive.pipe(outputArchiveStream);
-                        // zipArchive.bulk([
-                        //     { expand: true, cwd: 'source', src: ['**'], dest: 'source'}
-                        // ]);
-                        zipArchive.directory(unpackedArchiveFolder, false);
-                        zipArchive.finalize();
-                        // res.setHeader('Content-Type', 'application/json')
-                        //     .send(JSON.stringify({
-                        //         success: true,
-                        //         fileName: downloadFileName,
-                        //     }));});
-                    });
-                });
-
-            // removeCallback();
-        } catch (e) {
-            next(new Error(e));
-        }
+        handler(req, res, next, 'download');
+    })
+    .post('/preview/', async (req, res, next) => {
+        handler(req, res, next, 'preview');
     })
     .get('/download/', (req, res, next) => {
         const downloadFileName = req.query.fileName;
