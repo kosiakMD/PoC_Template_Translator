@@ -1,0 +1,10 @@
+
+#.gitignore
+__trash
+node_modules
+.idea/inspectionProfiles/
+#public/javascripts/
+public/__temp/
+public/semantic/
+semantic
+vendor

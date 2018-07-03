@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+</head>
+<body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <div>
+        <p>Hello</p>
+        <form action="upload" method="post" enctype="multipart/form-data">
+            <input type="file" value="File" name='fileUploaded'/>
+            <br/>
+            <br/>
+            <textarea name="template" cols="100" rows="20"></textarea>
+            <br/>
+            <br/>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+</body>
+</html>

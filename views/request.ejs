@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%- include partials/head.ejs %>
+    <title><%= title %></title>
+    <style>
+        h1.ui.center.header {
+            margin: 70px 0 50px 0;
+        }
+        .ui.menu .item img.logo {
+            margin-right: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <%- include partials/topMenu.ejs %>
+
+    <h1 class="ui center aligned header">Welcome to <%= title %></h1>
+
+    <div class="ui two column stackable grid container">
+        <div id="formComponent" class="column">
+            <h3 class="ui center aligned header">Entry</h3>
+            <form id="formUpload" action="<%= uploadRoute %>" method="post" enctype="multipart/form-data" class="ui form error">
+                <div class="field">
+                    <label for="vocabularyFile">Excel Vocabulary</label>
+                    <input id="vocabularyFile" type="file" value="File" name="<%= excelVocabulary %>"/>
+                </div>
+                <br/>
+                <div class="field">
+                    <label for="archiveFile">App Archive</label>
+                    <input id="archiveFile" type="file" value="File" name="<%= appZipped %>"/>
+                </div>
+
+                <br/>
+
+                <div class="btn teal ui fluid large teal submit button">Process</div>
+
+                <div class="ui error message"></div>
+                <div id="uploadDimmer" class="ui inverted dimmer">
+                    <div class="ui text loader">Loading</div>
+                </div>
+            </form>
+        </div>
+        <div id="resultComponent" class="column">
+            <h3 class="ui center aligned header">Result</h3>
+            <form id="formDownload" class="ui form error" method="post" action="<%= downloadRoute %>">
+                <div id="downloadArchive" class="field">
+                    <label for="selectLang">Select the Language</label>
+                    <select id="selectLang" name="<%= select %>"></select>
+                        <br/>
+                    <button type="submit" class="btn teal ui fluid large teal submit button">Download</button>
+                </div>
+                <div class="ui error message"></div>
+                <div id="downloadDimmer" class="ui inverted dimmer">
+                    <div class="ui text loader">Loading</div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+    $(() => {
+        const $formUpload = $('#formUpload'),
+              $formDownload = $('#formDownload'),
+              $submitUploadForm = $('#formUpload .submit'),
+              $submitDownloadForm = $('#formDownload .submit'),
+              $vocabularyFile = $('#vocabularyFile'),
+              $archiveFile = $('#archiveFile'),
+              $uploadErrorDiv = $('#formUpload .ui.error.message'),
+              $downloadErrorDiv = $('#formDownload .ui.error.message'),
+              $uploadDimmer = $('#uploadDimmer'), // active
+              $downloadDimmer = $('#downloadDimmer'), // active
+              $resultComponent = $('#resultComponent'),
+              $formComponent = $('#formComponent'),
+              $selectLang = $('#selectLang');
+        // Help Functions
+        const showUploadError = (msg) => {
+            $uploadErrorDiv.append(`<ul class='list'>
+                    <li>${msg}</li>
+                </ul>`);
+        }
+        const showDownloadError = (msg) => {
+            $downloadErrorDiv.append(`<ul class='list'>
+                    <li>${msg}</li>
+                </ul>`);
+        }
+
+        // Events
+        $submitUploadForm.on('click', () => {
+            $submitUploadForm.submit();
+        });
+        $formUpload.submit(function(e) {
+            e.preventDefault();
+
+            $uploadDimmer.addClass('active');
+            $uploadErrorDiv.empty();
+            const formData = new FormData(this);
+
+
+            const validation = () => {
+                return true;
+                const vocVal = $vocabularyFile.val();
+                const archVal = $archiveFile.val();
+                return vocVal && archVal;
+            }
+
+            if (!validation()) {
+                showUploadError('Please, choose files.');
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '<%= uploadRoute %>',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: (data) => {
+                        console.log('success', data);
+                        // $formComponent.empty();
+                        const $select = $(selectTemp(data.languages));
+                        // $resultComponent.append($select);
+                        $selectLang.html($select);
+                    },
+                    error: (error) => {
+                        console.error('error', error.responseJSON || error);
+                        if (error.responseJSON && error.responseJSON.message) {
+                            showUploadError(error.responseJSON.message);
+                        } else {
+                            showUploadError(`${error.status} ${error.statusText}`);
+                        }
+                    },
+                    complete: () => {
+                        $uploadDimmer.removeClass('active');
+                    },
+                })
+                    // .done( (data) => {
+                    //     console.log('done', data);
+                    // })
+                    // .fail((error) => {
+                    //     console.error('fail', error);
+                    // })
+                    // .always(() => {
+                    //     $uploadDimmer.removeClass('active');
+                    // });
+            }
+        });
+
+
+        $submitDownloadForm.on('click', () => {
+            $submitDownloadForm.submit();
+        });
+        /*$formDownload.submit(function(e) {
+            // return true;
+            e.preventDefault();
+
+            $downloadDimmer.addClass('active');
+            $downloadErrorDiv.empty();
+            const formData = new FormData(this);
+
+            $.ajax({
+                type: 'POST',
+                url: '<%= downloadRoute %>',
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: (data) => {
+                    console.log('success', data);
+                    $.fileDownload('some/file.pdf')
+                        .done(function () { alert('File download a success!'); })
+                        .fail(function () { alert('File download failed!'); });
+                },
+                error: (error) => {
+                    console.error('error', error.responseJSON || error);
+                    if (error.responseJSON && error.responseJSON.message) {
+                        showDownloadError(error.responseJSON.message);
+                    } else {
+                        showDownloadError(`${error.status} ${error.statusText}`);
+                    }
+                },
+                complete: () => {
+                    $downloadDimmer.removeClass('active');
+                },
+            })
+        });*/
+
+        const selectTemp = (list) => {
+            const empty = '<option value="">Select the Language</option>'
+            const options = list.map((name) => {
+                return `<option value="${name}">${name}</option>`;
+            })
+            // return `<select name="<%= select %>">${empty}${options}</select>`;
+            return empty + options;
+        }
+    })
+</script>
+</html>
