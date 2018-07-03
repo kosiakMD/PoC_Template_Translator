@@ -2,8 +2,9 @@
 #.gitignore
 __trash
 node_modules
+node_modules/
 .idea
 #public/javascripts/
 public/__temp/
 public/vendor/semantic
-vendor
+vendor/
