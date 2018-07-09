@@ -23,7 +23,7 @@
     <script src="vendor/semantic/components/transition.js"></script>
     <style type="text/css">
         body {
-            background-color: #DADADA;
+            background-color: #0061ac;
         }
         body > .grid {
             height: 100%;
@@ -39,15 +39,18 @@
 </head>
 <body>
 <div class="ui middle aligned center aligned grid">
-    <div class="column">
-        <h2 class="ui teal image header">
-            <img src="images/logo.png" class="image">
-            <div class="content">
-                Log-in to your account
+    <div class="column ui  segment">
+        <div class="ui images">
+                <img src="images/CoreValue_Logo_80x352.png" class="ui centered image">
             </div>
-        </h2>
+            <h2 class="ui blue image header">
+                <div class="content">
+                    Log-in to your account
+                </div>
+            </h2>
+
         <form class="ui large form" method="post" action="/request">
-            <div class="ui stacked segment">
+
                 <div class="field">
                     <div class="ui left icon input">
                         <i class="user icon"></i>
@@ -60,13 +63,11 @@
                         <input type="password" name="password" placeholder="Password">
                     </div>
                 </div>
-                <button class="ui fluid large teal submit button" type="submit">Login</button>
-            </div>
+                <button class="ui fluid large blue submit button" type="submit">Login</button>
 
             <div class="ui error message"></div>
 
         </form>
-
 
     </div>
 </div>

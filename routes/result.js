@@ -31,7 +31,7 @@ const noFileException = (res) => {
     res.setHeader('Content-Type', 'application/json');
     res.status(500).send(JSON.stringify({
         error: "No files detected.",
-        message: "Oops, first would you select a file?",
+        message: "Oops, first select a file?",
     }));
     // res.status(500).send('Required files not found');
 };

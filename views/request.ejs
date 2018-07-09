@@ -33,7 +33,7 @@
 
                 <br/>
 
-                <div class="btn teal ui fluid large teal submit button">Process</div>
+                <div class="btn  ui fluid large  submit blue button">Process</div>
 
                 <div class="ui error message"></div>
                 <div id="uploadDimmer" class="ui inverted dimmer">
@@ -46,14 +46,14 @@
             <form id="formDownload" class="ui form error" method="post" action="<%= downloadRoute %>">
                 <div id="downloadArchive" class="field">
                     <label for="selectLang">Select the Language</label>
-                    <select id="selectLang" name="<%= select %>"></select>
+                    <select id="selectLang" class="ui dropdown" name="<%= select %>"></select>
                         <br/>
                     <div id="resultComponent" class="ui two column grid">
                         <div class="column">
-                            <button type="submit" class="btn teal ui fluid large teal submit button">Download</button>
+                            <button type="submit" class="btn  ui fluid large  submit blue button">Download</button>
                         </div>
                         <div class="column">
-                            <div id="previewBtn" class="btn teal ui fluid large teal button">Preview</div>
+                            <div id="previewBtn" class="btn  ui fluid large  blue button">Preview</div>
                         </div>
                     </div>
                 </div>
