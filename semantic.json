@@ -1,22 +1,22 @@
 {
-  "base": "vendor/semantic/",
+  "autoInstall": true,
+  "base": "vendor/semantic",
   "paths": {
     "source": {
-      "config": "src/theme.config",
-      "definitions": "src/definitions/",
-      "site": "src/site/",
-      "themes": "src/themes/"
+      "config": "./src/theme.config",
+      "definitions": "./src/definitions/",
+      "site": "./src/site/",
+      "themes": "./src/themes/"
     },
     "output": {
-      "packaged": "../public/vendor/semantic/",
-      "uncompressed": "../public/vendor/semantic/components/",
-      "compressed": "../public/vendor/semantic/components/",
-      "themes": "../public/vendor/semantic/themes/"
+      "packaged": "../../public/vendor/semantic/",
+      "uncompressed": "../../public/vendor/semantic/components/",
+      "compressed": "../../public/vendor/semantic/components/",
+      "themes": "../../public/vendor/semantic/themes/"
     },
-    "clean": "../public/vendor/semantic/"
+    "clean": "../../public/vendor/semantic/"
   },
   "permission": false,
-  "autoInstall": false,
   "rtl": false,
   "version": "2.3.2"
 }
