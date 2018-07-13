@@ -1,4 +1,5 @@
-
+.env
+access.log
 #.gitignore
 __trash
 node_modules

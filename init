@@ -1,0 +1,10 @@
+
+const fs = require("fs");
+
+// encoding - Default: 'utf8'
+fs.writeFileSync(
+    '.env',
+    'ENV=DEV\nHOST=localhost\nPORT=3000'
+);
+fs.unlinkSync('init');
+process.exit();

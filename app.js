@@ -31,8 +31,11 @@ function viewEngineSetup(app) {
 // view engine setup
 viewEngineSetup(app);
 
-app.use(logger('dev'));
-// app.use(logger('common', {stream: fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'})}));
+if (process.env.ENV === 'DEV') {
+    app.use(logger('dev'));
+} else if (process.env.ENV === 'PROD' || process.env.ENV === 'STAGE') {
+    app.use(logger('common', {stream: fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'})}));
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());

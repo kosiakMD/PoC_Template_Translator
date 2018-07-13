@@ -12,7 +12,15 @@ const templateRenderController = (template, vocabularies, lang) => {
     console.log('templateRenderController', 'lang:', lang);
     // console.log(vocabularies);
     const vocabulary = vocabularies[lang];
-    vocabulary['LANG'] = Languages[lang] || 'en';
+    let langCode, langDir = 'ltr';
+    if (typeof Languages[lang] === 'object') {
+        langCode = Languages[lang].code;
+        langDir = Languages[lang].direction;
+    } else {
+        langCode = Languages[lang] || 'en';
+    }
+    vocabulary['__LANG__'] = langCode;
+    vocabulary['__DIR__'] = langDir;
     // vocabulary['LANG'] = `lang="${Languages[lang] || 'en'}"`;
     // console.log('vocabulary', vocabulary);
     return Mustache.render(template, vocabulary);

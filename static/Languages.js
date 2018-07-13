@@ -14,7 +14,10 @@ const languages = {
     'Akan': 'ak',
     'Albanian': 'sq',
     'Amharic': 'am',
-    'Arabic': 'ar',
+    'Arabic': {
+        code: 'ar',
+        direction: 'rtl',
+    },
     'Aragonese': 'an',
     'Armenian': 'hy',
     'Assamese': 'as',

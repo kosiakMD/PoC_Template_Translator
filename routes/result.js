@@ -16,12 +16,14 @@ const tmp = require('tmp');
 // const unzip = require('yauzl');
 var extract = require('extract-zip')
 const archiver = require('archiver');
-const ArchiveHelper = require('../helpers/ArchiveHelper');
+const ArchiveHelper = require('../helpers/archiveHelper');
 const FORMS = require('../static/FORMS');
 const excelReaderController = require('../controllers/excelReaderController');
 const templateRenderController = require('../controllers/templateRenderController');
 const walk = require('../utils/fsUtils').walk;
 const detectCharacterEncoding = require('detect-character-encoding');
+const Languages = require('../static/Languages');
+const changeDirectionHelper = require('../helpers/changeDirectionHelper');
 
 const noFileException = (res) => {
     // throw new Error('no files');
@@ -85,7 +87,7 @@ const handler = (req, res, next, result) => {
             // })
 
             // stream.on('close', () => {
-            const templates = ['.html', '.htm'] // , '.js', '.css'];
+            const templates = ['.html', '.htm', '.css']; // , '.js', '.css'];
             walk(unpackedArchiveAbsolutePath, (files) => {
                 console.log('files', files);
                 files.forEach((file) => {
@@ -102,8 +104,13 @@ const handler = (req, res, next, result) => {
                                 charsetMatch.encoding
                                 : 'utf-8');
                         // console.log('fileAsText', fileAsText);
-                        let translatedText = templateRenderController(fileAsText, vocabulary, language);
-                        // console.log('translatedText', translatedText);
+                        let translatedText;
+                        if (ext === '.css' && typeof Languages[language] === 'object' && Languages[language].direction === 'rtl' ) {
+                            translatedText = changeDirectionHelper(fileAsText);
+                        } else {
+                            translatedText = templateRenderController(fileAsText, vocabulary, language);
+                            // console.log('translatedText', translatedText);
+                        }
                         fs.writeFileSync(file, translatedText)
                     }
                 });
@@ -128,36 +135,46 @@ const handler = (req, res, next, result) => {
                             }
                         });
                     } else {
-                        fs.readdir(unpackedArchiveAbsolutePath, (err, files) => {
-                            if (err) {
-                                console.error(err);
-                                next(new Error(err));
-                            }
-                            let path = '';
-                            console.log('check files', files)
-                            if (files.length > 1) {
-                                path = unpackedArchiveFolder;
-                                console.log('RESULT: files');
-                            } else {
-                                const filePath = files[0];
-                                const stat = fs.statSync(unpackedArchiveAbsolutePath+ '/' + filePath);
-                                if(stat && stat.isDirectory()) {
-                                    // const fileName = path.basename(filePath);
-                                    path = unpackedArchiveFolder + '/' + filePath;
-                                    console.log('RESULT: folder', path);
-                                } else {
-                                    path = unpackedArchiveFolder;
-                                    console.log('RESULT: 1 file');
+                            fs.readdir(unpackedArchiveAbsolutePath, (err, files) => {
+                                let exception = false;
+                                if (err) {
+                                    console.error(err);
+                                    exception = true;
+                                    next(new Error(err));
                                 }
-                            }
-                            res.setHeader('Content-Type', 'application/json');
-                            res.send(
-                                JSON.stringify({
-                                    success: true,
-                                    path: path,
-                                })
-                            )
-                        });
+                                let path = '';
+                                console.log('check files', files)
+                                if (files.length > 1) {
+                                    path = unpackedArchiveFolder;
+                                    console.log('RESULT: files');
+                                } else {
+                                    const filePath = files[0];
+                                    let stat;
+                                    try {
+                                        stat = fs.statSync(unpackedArchiveAbsolutePath + '/' + filePath);
+                                    } catch (readDirError) {
+                                        exception = true;
+                                        next(new Error('The archive does not exist'));
+                                    }
+                                    if (stat && stat.isDirectory()) {
+                                        // const fileName = path.basename(filePath);
+                                        path = unpackedArchiveFolder + '/' + filePath;
+                                        console.log('RESULT: folder', path);
+                                    } else {
+                                        path = unpackedArchiveFolder;
+                                        console.log('RESULT: 1 file');
+                                    }
+                                }
+                                if (!exception) {
+                                    res.setHeader('Content-Type', 'application/json');
+                                    res.send(
+                                        JSON.stringify({
+                                            success: true,
+                                            path: path,
+                                        })
+                                    )
+                                }
+                            });
                     }
 
 

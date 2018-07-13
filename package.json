@@ -3,18 +3,20 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www && npm run open",
+    "start": "node ./bin/www",
     "build": "gulp build",
     "run": "pm2 start ./bin/www",
     "watch": "pm2 start ecosystem.config.js",
-    "postinstall": "npm install semantic-ui --save && gulp build",
-    "open": "open http://localhost:3000/"
+    "postinstall": "npm run env && npm install semantic-ui --save && gulp build",
+    "open": "open http://localhost:3000/",
+    "env": "node init"
   },
   "dependencies": {
     "archiver": "^2.1.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "detect-character-encoding": "^0.6.0",
+    "dotenv": "^6.0.0",
     "ejs": "~2.5.7",
     "exceljs": "^1.5.1",
     "express": "~4.16.0",
