@@ -1,5 +1,8 @@
-const createError = require('http-errors');
 const express = require('express');
+// const cookieSession = require('cookie-session');
+const session = require('express-session');
+const uuidv1 = require('uuid/v1');
+const createError = require('http-errors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
@@ -8,6 +11,17 @@ const fileUpload = require('express-fileupload');
 const fs = require('fs');
 
 const app = express();
+
+// app.set('trust proxy', 1); // trust first proxy
+// app.use(cookieSession({
+//     name: 'session',
+//     keys: ['secret_key']
+// }));
+const sess = {
+    secret: 'secret_key',
+    genid: (req) => uuidv1(),
+};
+app.use(session(sess))
 
 app.use(fileUpload());
 

@@ -8,15 +8,16 @@
 const tmp = require('tmp');
 const fs = require('fs');
 
-class ArchiveHelper {
+class ArchiveKeeper {
 
     constructor() {
-        this.__filePath = '';
-        this.__cleanupCallback = () => {};
-        this.__tmpobj = '';
+        // this.__filePath = '';
+        // this.__cleanupCallback = () => {};
+        // this.__tmpobj = '';
+        this.__map = new Map();
     }
 
-    save(archiveFile) {
+    save(sid, archiveFile) {
         return new Promise((resolve, reject) => {
             const tmpobj = tmp.dirSync();
             const folderPath = tmpobj.name;
@@ -29,8 +30,8 @@ class ArchiveHelper {
                 const fullPath = `${folderPath}/${fileName}`;
                 console.log('archiveHelper fullPath: ', fullPath);
 
-                this.__filePath = fullPath;
-                this.__tmpobj = tmpobj;
+                // this.__filePath = fullPath;
+                // this.__tmpobj = tmpobj;
 
             fs.writeFileSync(fullPath, fileData, (err) => {
                 if (err) {
@@ -39,19 +40,27 @@ class ArchiveHelper {
                 console.log('The file has been saved!');
             });
 
+                this.__map.set(sid, {
+                    filePath: fullPath,
+                    tmpobj,
+                });
                 resolve(fullPath);
             // })
         });
     }
 
-    getFile() {
-        return this.__filePath;
+    getFile(sid) {
+        // return this.__filePath;
+        const object = this.__map.get(sid);
+        return object.filePath;
     }
 
-    clean() {
+    clean(sid) {
         // this.__cleanupCallback();
-        this.__tmpobj.removeCallback();
+        const object = this.__map.get(sid);
+        object.tmpobj.removeCallback();
     }
 }
 
-module.exports = ArchiveHelper;
+const archiveHelper = new ArchiveKeeper();
+module.exports = archiveHelper;

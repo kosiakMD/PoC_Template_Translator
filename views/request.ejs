@@ -59,7 +59,7 @@
                 </div>
                 <div class="ui error message"></div>
                 <div id="downloadDimmer" class="ui inverted dimmer">
-                    <div class="ui text loader">Loading</div>
+                    <div class="ui text loader">Processing...</div>
                 </div>
             </form>
         </div>
@@ -159,6 +159,7 @@
 
 
         $previewBtn.on('click', () => {
+            $downloadDimmer.addClass('active');
             const data = {
                 '<%= select %>': $('[name="<%= select %>"]').val(),
             };
@@ -178,6 +179,9 @@
                         <iframe src="${data.path}" frameborder="0" scrolling="no" onload="resizeIframe(this)" />
                     `);
                 },
+                complete: () => {
+                    $downloadDimmer.removeClass('active');
+                }
             });
         });
 

@@ -9,7 +9,7 @@ const Mustache = require('mustache');
 const Languages = require('../static/Languages');
 
 const templateRenderController = (template, vocabularies, lang) => {
-    console.log('templateRenderController', 'lang:', lang);
+    // console.log('templateRenderController', 'lang:', lang);
     // console.log(vocabularies);
     const vocabulary = vocabularies[lang];
     let langCode, langDir = 'ltr';

@@ -23,7 +23,7 @@ router.post("/", async (req, res, next) => {
     // console.log(req.files.fileUploaded.name);
     if (req.files) {
         // console.log('req', req);
-        console.log(util.inspect(req.files));
+        console.log('util.inspect', util.inspect(req.files));
         let file = req.files.fileUploaded;
         if (file.size === 0) {
             // res.send('respond with a resource');
