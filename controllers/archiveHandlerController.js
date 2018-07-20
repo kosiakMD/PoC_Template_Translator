@@ -111,7 +111,9 @@ const archiveHandlerController = (req, res, next, result) => {
                 });
 
                 const downloadFileName = `${inputArchiveName}_${language}.zip`;
-                const downloadPath = `${__dirname}/../public/__temp/${downloadFileName}`;
+                // const downloadPath = `${__dirname}/../public/__temp/${downloadFileName}`;
+                const downloadPath = `${indexFilePath}/${downloadFileName}}`;
+                console.log('downloadPath', downloadPath);
                 const outputArchiveStream = fs.createWriteStream(downloadPath);
                 const zipArchive = archiver('zip');
                 outputArchiveStream.on('close', function () {
