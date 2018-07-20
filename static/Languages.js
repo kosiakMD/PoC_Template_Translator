@@ -82,7 +82,10 @@ const languages = {
     'Gujarati': 'gu',
     'Haitian Creole': 'ht',
     'Hausa': 'ha',
-    'Hebrew': 'he',
+    'Hebrew': {
+        code: 'he',
+        direction: 'rtl'
+    },
     'Herero': 'hz',
     'Hindi': 'hi',
     'Hiri Motu': 'ho',
