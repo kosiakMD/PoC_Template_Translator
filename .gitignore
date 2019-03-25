@@ -1,10 +1,10 @@
 
 #.gitignore
 __trash
-node_modules
+git add
 node_modules/
 .idea
 #public/javascripts/
 public/__temp/
 public/vendor/semantic
-#vendor/
+vendor/
